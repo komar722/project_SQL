@@ -1,0 +1,52 @@
+1. Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+
+-- pokles mezd podle odvětví
+
+WITH srovnani_mezd AS (
+    SELECT
+        kod_odvetvi,
+        odvetvi,
+        rok_mzdy,
+        prumerna_mzda,
+        lag(prumerna_mzda) OVER (PARTITION BY kod_odvetvi ORDER BY rok_mzdy) AS prumerna_mzda_predchozi_rok,
+        prumerna_mzda - lag(prumerna_mzda) OVER (PARTITION BY kod_odvetvi ORDER BY rok_mzdy) AS rozdil
+    FROM t_marie_koblizkova_project_SQL_primary_final
+)
+SELECT
+    kod_odvetvi,
+    odvetvi,
+    rok_mzdy,
+    prumerna_mzda,
+    prumerna_mzda_predchozi_rok,
+    rozdil
+FROM srovnani_mezd
+WHERE 
+    prumerna_mzda < prumerna_mzda_predchozi_rok
+    AND prumerna_mzda_predchozi_rok IS NOT NULL
+ORDER BY kod_odvetvi, rok_mzdy;
+
+--odvětví, kde došlo k největšímu meziročnímu poklesu
+
+WITH srovnani_mezd AS (
+    SELECT
+        kod_odvetvi,
+        odvetvi,
+        rok_mzdy,
+        prumerna_mzda,
+        lag(prumerna_mzda) OVER (PARTITION BY kod_odvetvi ORDER BY rok_mzdy) AS prumerna_mzda_predchozi_rok,
+        prumerna_mzda - lag(prumerna_mzda) OVER (PARTITION BY kod_odvetvi ORDER BY rok_mzdy) AS rozdil
+    FROM t_marie_koblizkova_project_SQL_primary_final
+)
+SELECT
+    kod_odvetvi,
+    odvetvi,
+    rok_mzdy,
+    prumerna_mzda,
+    prumerna_mzda_predchozi_rok,
+    rozdil
+FROM srovnani_mezd
+WHERE 
+    prumerna_mzda < prumerna_mzda_predchozi_rok
+    AND prumerna_mzda_predchozi_rok IS NOT NULL
+ORDER BY rozdil 
+LIMIT 3;
