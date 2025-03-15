@@ -1,0 +1,97 @@
+4. Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?
+
+WITH mezirocni_srovnani AS (
+    SELECT 
+        rok_ceny,
+        ROUND(AVG(prumerna_cena), 2) AS prumerna_cena, 
+        LAG(AVG(prumerna_cena)) OVER (ORDER BY rok_ceny) AS ceny_predchozi_rok 
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE 
+        prumerna_cena IS NOT NULL 
+    GROUP BY rok_ceny  
+), zmena_cen AS (
+    SELECT 
+        rok_mzdy,
+        ROUND(AVG(prumerna_mzda), 2) AS prumerna_mzda,  
+        LAG(AVG(prumerna_mzda)) OVER (ORDER BY rok_mzdy) AS mzdy_predchozi_rok  
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE 
+        prumerna_mzda IS NOT NULL 
+    GROUP BY rok_mzdy  
+), zmena_vyse_mezd AS (
+    SELECT 
+        c.rok_ceny,
+        ROUND((c.prumerna_cena - c.ceny_predchozi_rok) / c.ceny_predchozi_rok * 100, 2) AS procentni_zmena_ceny,  
+        ROUND((m.prumerna_mzda - m.mzdy_predchozi_rok) / m.mzdy_predchozi_rok * 100, 2) AS procentni_zmena_mezd  
+    FROM mezirocni_srovnani c
+    JOIN zmena_cen m
+        ON c.rok_ceny = m.rok_mzdy 
+)
+SELECT 
+    rok_ceny,
+    procentni_zmena_ceny,
+    procentni_zmena_mezd,
+    (procentni_zmena_ceny - procentni_zmena_mezd) AS rozdil  -- Výpočet rozdílu mezi změnou cen a mezd
+FROM zmena_vyse_mezd
+WHERE 
+    procentni_zmena_ceny > 10 
+    AND procentni_zmena_mezd <= 10  
+ORDER BY procentni_zmena_ceny DESC;  -- Seřadí podle procentní změny cen sestupně (rozdil > 10)
+
+
+-- prumerne ceny v jednotlivych letech
+
+SELECT 
+    rok_ceny, 
+    AVG(prumerna_cena) AS prumerna_cena,
+FROM t_marie_koblizkova_project_SQL_primary_final
+WHERE prumerna_cena IS NOT NULL
+GROUP BY rok_ceny
+ORDER BY rok_ceny;
+
+-- prumerne mzdy v jednotlivych letech
+
+SELECT 
+    rok_mzdy, 
+    AVG(prumerna_mzda) AS prumerna_mzda
+FROM t_marie_koblizkova_project_SQL_primary_final
+WHERE prumerna_mzda IS NOT NULL
+GROUP BY rok_mzdy
+ORDER BY rok_mzdy;
+
+-- procentni změny cen a mezd v jednotlivych letech
+
+WITH mezirocni_srovnani AS (
+    SELECT 
+        rok_ceny,
+        ROUND(AVG(prumerna_cena), 2) AS prumerna_cena, 
+        LAG(AVG(prumerna_cena)) OVER (ORDER BY rok_ceny) AS ceny_predchozi_rok 
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE 
+        prumerna_cena IS NOT NULL 
+    GROUP BY rok_ceny  
+), zmena_cen AS (
+    SELECT 
+        rok_mzdy,
+        ROUND(AVG(prumerna_mzda), 2) AS prumerna_mzda,  
+        LAG(AVG(prumerna_mzda)) OVER (ORDER BY rok_mzdy) AS mzdy_predchozi_rok  
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE 
+        prumerna_mzda IS NOT NULL 
+    GROUP BY rok_mzdy  
+), zmena_vyse_mezd AS (
+    SELECT 
+        c.rok_ceny,
+        ROUND((c.prumerna_cena - c.ceny_predchozi_rok) / c.ceny_predchozi_rok * 100, 2) AS procentni_zmena_ceny,  
+        ROUND((m.prumerna_mzda - m.mzdy_predchozi_rok) / m.mzdy_predchozi_rok * 100, 2) AS procentni_zmena_mezd  
+    FROM mezirocni_srovnani c
+    JOIN zmena_cen m
+        ON c.rok_ceny = m.rok_mzdy 
+)
+SELECT 
+    rok_ceny,
+    procentni_zmena_ceny,
+    procentni_zmena_mezd,
+    (procentni_zmena_ceny - procentni_zmena_mezd) AS rozdil  -- Výpočet rozdílu mezi změnou cen a mezd
+FROM zmena_vyse_mezd
+ORDER BY rozdil DESC;  
