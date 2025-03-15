@@ -1,0 +1,50 @@
+3. Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?
+
+-- mezirocni zmena cen
+
+WITH price_changes AS (
+    SELECT
+        rok_ceny, 
+        kod_zbozi,
+        nazev_zbozi,
+        prumerna_cena,
+        LAG(prumerna_cena) OVER (PARTITION BY kod_zbozi ORDER BY rok_ceny) AS ceny_predchozi_rok
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE kod_zbozi IS NOT NULL
+)
+SELECT 
+    rok_ceny,
+    kod_zbozi,
+    nazev_zbozi,
+    prumerna_cena,
+    ceny_predchozi_rok,
+    ((prumerna_cena - ceny_predchozi_rok) / ceny_predchozi_rok) * 100 AS percent_change
+FROM price_changes
+WHERE ceny_predchozi_rok IS NOT NULL
+ORDER BY percent_change ASC
+LIMIT 5;
+
+--pouze potraviny, u kterých došlo k nárůstu ceny (nejnižší nárůst)--
+
+WITH price_changes AS (
+    SELECT
+        rok_ceny, 
+        kod_zbozi,
+        nazev_zbozi,
+        prumerna_cena,
+        LAG(prumerna_cena) OVER (PARTITION BY kod_zbozi ORDER BY rok_ceny) AS ceny_predchozi_rok
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE kod_zbozi IS NOT NULL
+)
+SELECT 
+    rok_ceny,
+    kod_zbozi,
+    nazev_zbozi,
+    prumerna_cena,
+    ceny_predchozi_rok,
+    ((prumerna_cena - ceny_predchozi_rok) / ceny_predchozi_rok) * 100 AS percent_change
+FROM price_changes
+WHERE ceny_predchozi_rok IS NOT NULL
+  AND ((prumerna_cena - ceny_predchozi_rok) / ceny_predchozi_rok) * 100 > 0
+ORDER BY percent_change ASC
+LIMIT 5;
