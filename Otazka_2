@@ -1,0 +1,41 @@
+2. Kolik je možné si koupit litrů mléka a kilogramů chleba za první a poslední srovnatelné období v dostupných datech cen a mezd?
+
+-- pomocný select na zjištění kódu chleba a mléka:
+
+SELECT 
+	cpc.name,
+	cpc.code
+FROM czechia_price_category cpc 
+WHERE cpc.name LIKE 'Chléb%' OR cpc.name LIKE 'Mléko%';
+
+
+WITH srovnani_kupni_sily AS (
+    SELECT 
+        rok_mzdy,
+        round(avg(prumerna_mzda)) AS prumerna_mzda
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE
+        rok_mzdy IN ('2006', '2018')
+    GROUP BY rok_mzdy
+),
+prumerne_ceny AS (
+    SELECT 
+        kod_zbozi,
+        avg(prumerna_cena) AS prumerna_cena,
+        rok_ceny
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE 
+        (kod_zbozi = '111301' OR kod_zbozi = '114201')
+        AND rok_ceny IN (2006, 2018)
+    GROUP BY kod_zbozi, rok_ceny
+)
+SELECT 
+    rok_mzdy,
+    prumerna_mzda,
+    round(SUM(CASE WHEN kod_zbozi = '111301' THEN prumerna_mzda / prumerna_cena ELSE 0 END)) AS litry_mleka,
+    round(SUM(CASE WHEN kod_zbozi = '114201' THEN prumerna_mzda / prumerna_cena ELSE 0 END)) AS kilogramy_chleba
+FROM srovnani_kupni_sily 
+JOIN prumerne_ceny  
+	ON rok_mzdy = rok_ceny
+GROUP BY rok_mzdy, prumerna_mzda
+ORDER BY rok_mzdy;
