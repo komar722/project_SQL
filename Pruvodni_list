@@ -1,0 +1,90 @@
+Projekt SQL 
+Autor: Marie Koblížková
+
+Úvod do projektu
+Na vašem analytickém oddělení nezávislé společnosti, která se zabývá životní úrovní občanů, jste se dohodli, že se pokusíte odpovědět na pár definovaných výzkumných otázek, které adresují dostupnost základních potravin široké veřejnosti. Kolegové již vydefinovali základní otázky, na které se pokusí odpovědět a poskytnout tuto informaci tiskovému oddělení. Toto oddělení bude výsledky prezentovat na následující konferenci zaměřené na tuto oblast.
+Potřebují k tomu od vás připravit robustní datové podklady, ve kterých bude možné vidět porovnání dostupnosti potravin na základě průměrných příjmů za určité časové období.
+Jako dodatečný materiál připravte i tabulku s HDP, GINI koeficientem a populací dalších evropských států ve stejném období, jako primární přehled pro ČR.
+
+Datové sady, které je možné požít pro získání vhodného datového podkladu
+Primární tabulky:
+•	czechia_payroll – Informace o mzdách v různých odvětvích za několikaleté období. Datová sada pochází z Portálu otevřených dat ČR.
+•	czechia_payroll_calculation – Číselník kalkulací v tabulce mezd.
+•	czechia_payroll_industry_branch – Číselník odvětví v tabulce mezd.
+•	czechia_payroll_unit – Číselník jednotek hodnot v tabulce mezd.
+•	czechia_payroll_value_type – Číselník typů hodnot v tabulce mezd.
+•	czechia_price – Informace o cenách vybraných potravin za několikaleté období. Datová sada pochází z Portálu otevřených dat ČR.
+•	czechia_price_category – Číselník kategorií potravin, které se vyskytují v našem přehledu.
+Číselníky sdílených informací o ČR:
+•	czechia_region – Číselník krajů České republiky dle normy CZ-NUTS 2.
+•	czechia_district – Číselník okresů České republiky dle normy LAU.
+Dodatečné tabulky:
+•	countries - Všemožné informace o zemích na světě, například hlavní město, měna, národní jídlo nebo průměrná výška populace.
+•	economies - HDP, GINI, daňová zátěž, atd. pro daný stát a rok.
+
+Výzkumné otázky
+1.	Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+2.	Kolik je možné si koupit litrů mléka a kilogramů chleba za první a poslední srovnatelné období v dostupných datech cen a mezd?
+3.	Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?
+4.	Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?
+5.	Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo následujícím roce výraznějším růstem?
+Výstupy z projektu
+Výstupem projektu jsou dvě tabulky v databázi, ze kterých se požadovaná data dají získat: 
+•	t_marie_koblizkova_project_SQL_primary_final (pro data mezd a cen potravin za Českou republiku sjednocených na totožné porovnatelné období – společné roky) 
+•	t_ marie_koblizkova _project_SQL_secondary_final (pro dodatečná data o dalších evropských státech).
+Primární tabulka bude sloužit jako podklad pro zodpovězení výzkumných otázek č. 1 – 4. Pro zodpovězení výzkumné otázky č. 5 bude použita sekundární tabulka jako dodatečný materiál s informacemi o HDP, GINI koeficientem a populací dalších evropských států ve stejném období, jako primární přehled pro ČR..
+Zjistila jsem, že porovnatelné období pro zodpovězení výzkumných otázek je období mezi roky 2006 – 2018.
+Dále jsem připravila sadu SQL (skript včetně popisu mezivýsledků), které z připravených tabulek získají datový podklad k zodpovězení výzkumných otázek. 
+
+
+1.	Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+Pro zodpovězení výzkumné otázky č. 1 byla analyzována data o 19 odvětvích v období let 2006 – 2018. Zjišťovala jsem, v kolika odvětvích došlo k meziročnímu poklesu průměrných mezd. 
+Zjistila jsem, že i když průměrné mzdy obecně rostou, k meziročnímu poklesu průměrných mezd došlo v průběhu zkoumaného období u většiny odvětví. 
+Největší meziroční pokles byl zaznamenán v roce 2013 u odvětví Peněžnictví a pojišťovnictví (o 4 473 Kč) a Výroba a rozvod elektřiny, plynu, tepla a klimatiz. vzduchu (o 1 807 Kč)  a u odvětví Těžba a dobývání v roce 2009 (o 1 275 Kč).
+Odvětví, kde v průběhu let mzdy průběžně rostou, jsou:
+•	Zpracovatelský průmysl
+•	Doprava a skladování
+•	Administrativní a podpůrné činnosti
+•	Zdravotní a sociální péče
+•	Ostatní činnosti
+
+
+2.	Kolik je možné si koupit litrů mléka a kilogramů chleba za první a poslední srovnatelné období v dostupných datech cen a mezd?
+Jak už jsem uvedla výše, porovnatelné období pro zodpovězení výzkumných otázek je období mezi roky 2006 – 2018. Pro zodpovězení výzkumné otázky č. 2 byla hodnocena data za roky 2006 a 2018.
+Byla požita data z primární tabulky, z kterých jsem zjišťovala data o průměrné mzdě a o cenách mléka a chleba.
+Závěr:
+Průměrná mzda se zvýšila z částky 20 342 Kč v roce 2006 na 31 980 Kč v roce 2018.
+Za průměrnou mzdu v roce 2006 bylo možné si koupit 1262 litrů mléka a 1409 kg chleba.
+Za průměrnou mzdu v roce 2018 bylo možné si koupit 1319 litrů mléka a 1614 kg chleba.
+Průměrná mzda tedy vzrostla víc, než ceny mléka a chleba.
+3.	Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?
+Pro zodpovězení výzkumné otázky č. 3 jsem využila data z primární tabulky. Porovnávala jsem meziroční změnu průměrné ceny u všech dostupných kategorií potravin v období od roku 2006 do roku 2018.
+Zjistila jsem, že existují kategorie potravin, u kterých došlo k meziročnímu poklesu průměrné ceny. Největší meziroční pokles průměrné ceny je patrný u kategorií Rajská jablka červená kulatá (- 30,28 % v roce 2007) a Pečivo pšeničné bílé (-28,5 % v roce 2009).
+Odpověď na otázku u které kategorie potravin je nejnižší percentuální meziroční nárůst cen:
+1.	Rostlinný roztíratelný tuk o 0,01 % v roce 2009
+2.	Vepřová pečeně s kostí o 0,02 % v roce 2009
+3.	Rostlinný roztíratelný tuk o 0,07 % v roce 2007
+4.	Pšeničná mouka hladká o 0,09 % v roce 2018
+5.	Přírodní minerální voda uhličitá o 0,23 % v roce 2015.
+
+
+4.	Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?
+Pro zodpovězení výzkumné otázky č. 4 jsem využila data z primární tabulky. Porovnávala jsem meziroční změnu průměrné ceny u všech dostupných kategorií potravin a meziroční změnu průměrných mezd v období od roku 2006 do roku 2018.
+U získaných dat jsem provedla procentuální porovnání.
+Zjistila jsem, že neexistuje rok, ve kterém by byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %).
+Nejvýraznější procentuální nárůst cen potravin v poměru k výši mezd se projevil v roce 2013, kdy průměrné mzdy meziročně poklesly o 1,56 %, a zároveň ceny vzrostly o 5,10 %.
+ 
+
+5.	Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo následujícím roce výraznějším růstem?
+Pro zodpovězení výzkumné otázky č. 5 jsem využila data ze sekundární tabulky vytvořené spojením tabulek economies a countries. K výzkumu jsem použila data za podmínky: continent = 'Europe', roky = 2006 – 2018.
+Provedla jsem meziroční srovnání HDP, GINI koeficientu a populace jednotlivých evropských států za období 2006 – 2018.
+Dále jsem pracovala s daty za Českou republiku a zjišťovala, jestli má výška HDP vliv na změny ve mzdách a cenách potravin, neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo následujícím roce výraznějším růstem. Využila jsem data z primární tabulky. 
+Na základě vyhodnocení dat nelze jednoznačně konstatovat, že výška HDP má vliv na změny ve mzdách a cenách potravin. Neprokázalo se, že pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo následujícím roce výraznějším růstem.
+Existují roky, kdy je meziroční procentní změna HDP, mezd a cen vyrovnaná – jedná se o roky 2007, 2010, 2011 a 2014.
+V roce 2008 je možný vliv růstu HDP v roce 2007 (5,57 %) na růst mezd a cen v roce 2008.
+V roce 2009 došlo k meziročnímu procentnímu poklesu HDP a cen, zatímco mzdy rostly.
+V roce 2012 došlo k meziročnímu procentnímu poklesu HDP, zatímco ceny a mzdy rostly.
+V roce 2013 došlo k meziročnímu procentnímu poklesu HDP a mezd, zatímco ceny vzrostly o 5 %.
+V letech 2015 a 2016 došlo k meziročnímu procentnímu růstu HDP a mezd, zatímco ceny poklesly.
+V letech 2017 a 2018 došlo k meziročnímu procentnímu růstu HDP, cen i mezd, nelze však vyvodit závěr, že mezi daty existuje souvislost.
+
