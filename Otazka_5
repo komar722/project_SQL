@@ -1,0 +1,93 @@
+5. Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo následujícím roce výraznějším růstem?
+
+-- meziroční zmena gdp, gini 
+
+SELECT 
+    YEAR,
+    country,
+    population,
+    gini,
+    gdp_zkoumany_rok,
+    gdp_predchozi_rok,
+    (gdp_zkoumany_rok - gdp_predchozi_rok) / gdp_predchozi_rok * 100 AS procentni_zmena_gdp
+FROM (
+    SELECT 
+        YEAR,
+        country,
+        population,
+    	gini,
+        gdp AS gdp_zkoumany_rok, 
+        lag(gdp) OVER (PARTITION BY country ORDER BY year) AS gdp_predchozi_rok  
+    FROM t_marie_koblizkova_project_SQL_secondary_final mk2
+)
+WHERE 
+    gdp_predchozi_rok IS NOT NULL 
+ORDER BY procentni_zmena_gdp DESC ; 
+
+-- prumerne ceny v CR v jednotlivych letech
+
+SELECT 
+    rok_ceny, 
+    AVG(prumerna_cena) AS prumerna_cena
+FROM t_marie_koblizkova_project_SQL_primary_final
+WHERE prumerna_cena IS NOT NULL
+GROUP BY rok_ceny
+ORDER BY rok_ceny;
+
+-- prumerne mzdy v CR v jednotlivych letech
+
+SELECT 
+    rok_mzdy, 
+    AVG(prumerna_mzda) AS prumerna_mzda
+FROM t_marie_koblizkova_project_SQL_primary_final
+WHERE prumerna_mzda IS NOT NULL
+GROUP BY rok_mzdy
+ORDER BY rok_mzdy;
+
+-- vliv zmeny gdp na zmenu cen a mezd
+
+WITH zmena_gdp AS (
+    SELECT 
+        YEAR,
+        country,
+        gdp_zkoumany_rok,
+        gdp_predchozi_rok,
+        (gdp_zkoumany_rok - gdp_predchozi_rok) / gdp_predchozi_rok * 100 AS procentni_zmena_gdp
+    FROM (
+        SELECT 
+            YEAR,
+            country,
+            gdp AS gdp_zkoumany_rok, 
+            LAG(gdp) OVER (PARTITION BY country ORDER BY YEAR) AS gdp_predchozi_rok  
+        FROM t_marie_koblizkova_project_SQL_secondary_final
+    ) subquery
+    WHERE gdp_predchozi_rok IS NOT NULL 
+    AND country = 'Czech Republic'
+),
+zmena_mzdy AS (
+    SELECT 
+        rok_mzdy, 
+        AVG(prumerna_mzda) AS prumerna_mzda,
+        LAG(AVG(prumerna_mzda)) OVER (ORDER BY rok_mzdy) AS mzdy_predchozi_rok
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE prumerna_mzda IS NOT NULL
+    GROUP BY rok_mzdy
+),
+zmena_ceny_potravin AS (
+    SELECT 
+        rok_ceny, 
+        AVG(prumerna_cena) AS prumerna_cena,
+        LAG(AVG(prumerna_cena)) OVER (ORDER BY rok_ceny) AS ceny_predchozi_rok 
+    FROM t_marie_koblizkova_project_SQL_primary_final
+    WHERE prumerna_cena IS NOT NULL
+    GROUP BY rok_ceny
+)
+SELECT 
+    zmena_gdp.YEAR,
+    zmena_gdp.procentni_zmena_gdp,
+    (zmena_ceny_potravin.prumerna_cena - zmena_ceny_potravin.ceny_predchozi_rok) / zmena_ceny_potravin.ceny_predchozi_rok * 100 AS procentni_zmena_ceny,  
+    (zmena_mzdy.prumerna_mzda - zmena_mzdy.mzdy_predchozi_rok) / zmena_mzdy.mzdy_predchozi_rok * 100 AS procentni_zmena_mezd  
+FROM zmena_gdp
+LEFT JOIN zmena_mzdy ON zmena_gdp.YEAR = zmena_mzdy.rok_mzdy
+LEFT JOIN zmena_ceny_potravin ON zmena_gdp.YEAR = zmena_ceny_potravin.rok_ceny
+ORDER BY zmena_gdp.YEAR;
